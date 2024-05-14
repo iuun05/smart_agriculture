@@ -1,0 +1,170 @@
+C51 COMPILER V9.60.7.0   SGP30                                                             04/18/2024 00:04:46 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE SGP30
+OBJECT MODULE PLACED IN .\Objects\SGP30.obj
+COMPILER INVOKED BY: E:\keil\Keil_v5_c51\C51\BIN\C51.EXE SGP30.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT
+                    -(.\Listings\SGP30.lst) TABS(2) OBJECT(.\Objects\SGP30.obj)
+
+line level    source
+
+   1          #include "allh.h"
+   2          
+   3          
+   4          //I2CÆðÊ¼ÐÅºÅ
+   5          void I2CStart(void)
+   6          {
+   7   1        SDA = 1;                            //·¢ËÍÆðÊ¼Ìõ¼þµÄÊý¾ÝÐÅºÅ 
+   8   1        SCL = 1;
+   9   1        _DELAY_US(50);                    //ÆðÊ¼Ìõ¼þ½¨Á¢Ê±¼ä´óÓÚ4.7us,ÑÓÊ± 
+  10   1        SDA = 0;                            //·¢ËÍÆðÊ¼ÐÅºÅ
+  11   1        _DELAY_US(50);                    //ÆðÊ¼Ìõ¼þËø¶¨Ê±¼ä´óÓÚ4¦Ìs 
+  12   1        SCL = 0;                            //Ç¯×¡I2C×ÜÏß£¬×¼±¸·¢ËÍ»ò½ÓÊÕÊý¾Ý 
+  13   1        _DELAY_US(50);
+  14   1      }
+  15          
+  16          //I2CÍ£Ö¹ÐÅºÅ
+  17          void I2CStop(void)
+  18          {
+  19   1        SDA = 0;                        //·¢ËÍ½áÊøÌõ¼þµÄÊý¾ÝÐÅºÅ 
+  20   1        SCL = 0;
+  21   1        _DELAY_US(50);
+  22   1        SCL = 1;                        //·¢ËÍ½áÊøÌõ¼þµÄÊ±ÖÓÐÅºÅ 
+  23   1        _DELAY_US(50);                //½áÊøÌõ¼þ½¨Á¢Ê±¼ä´óÓÚ4¦Ìs 
+  24   1        SDA = 1;                        //·¢ËÍI2C×ÜÏß½áÊøÐÅºÅ 
+  25   1        _DELAY_US(50);
+  26   1      }
+  27          
+  28          //I2CÐ´Ò»¸ö×Ö½ÚÊý¾Ý£¬·µ»ØACK»òÕßNACK
+  29          u8 I2C_Write_Byte(u8 Write_Byte)  //Sendbyte
+  30          {
+  31   1        u8 i;
+  32   1        SCL=0;
+  33   1        _DELAY_US(10);
+  34   1        for(i=0; i<8; i++)            //Òª´«ËÍµÄÊý¾Ý³¤¶ÈÎª8Î» 
+  35   1        {
+  36   2          if(Write_Byte&0x80)   //ÅÐ¶Ï·¢ËÍÎ» 
+  37   2          {
+  38   3            SDA = 1;
+  39   3          }
+  40   2          else
+  41   2          {
+  42   3            SDA = 0;
+  43   3          }
+  44   2          _DELAY_US(5);
+  45   2          SCL=1;                //Êä³öSDAÎÈ¶¨ºó£¬À­¸ßSCL¸ø³öÉÏÉýÑØ£¬´Ó»ú¼ì²âµ½ºó½øÐÐÊý¾Ý²ÉÑù
+  46   2          _DELAY_US(5);         //±£Ö¤Ê±ÖÓ¸ßµçÆ½ÖÜÆÚ´óÓÚ4¦Ìs 
+  47   2          SCL=0;
+  48   2          _DELAY_US(5);
+  49   2          Write_Byte <<= 1;
+  50   2        }
+  51   1        _DELAY_US(1);
+  52   1        SDA = 1;                      //8Î»·¢ËÍÍêºóÊÍ·ÅÊý¾ÝÏß£¬×¼±¸½ÓÊÕÓ¦´ðÎ»-ZLG
+  53   1        _DELAY_US(40);
+  54   1        SCL = 1;                      //MCU¸æÖªSHT2XÊý¾Ý·¢ËÍÍê±Ï£¬µÈ´ý´Ó»úµÄÓ¦´ðÐÅºÅ
+C51 COMPILER V9.60.7.0   SGP30                                                             04/18/2024 00:04:46 PAGE 2   
+
+  55   1        _DELAY_US(40);
+  56   1        /*ÒÔÏÂÊÇÅÐ¶ÏI2C×ÜÏß½ÓÊÕÓ¦µ½Ó¦´ðÐÅºÅÊÇACK»¹ÊÇNACK*/
+  57   1        if(SDA==1)                                   //SDAÎª¸ß£¬ÊÕµ½NACK
+  58   1        {
+  59   2          _DELAY_US(40);
+  60   2          SCL=0;
+  61   2          return NACK;
+  62   2        }
+  63   1        else                                         //SDAÎªµÍ£¬ÊÕµ½ACK
+  64   1        {
+  65   2          _DELAY_US(40);
+  66   2          SCL=0;
+  67   2          return ACK;
+  68   2      
+  69   2        }
+  70   1      }
+  71          
+  72          //I2C¶ÁÒ»¸ö×Ö½ÚÊý¾Ý£¬Èë¿Ú²ÎÊýÓÃÓÚ¿ØÖÆÓ¦´ð×´Ì¬£¬ACK»òÕßNACK
+  73          u8 I2C_Read_Byte(u8 AckValue)//receivebyte
+  74          {
+  75   1        u8 i,RDByte=0;
+  76   1        SCL=0;                                   //ÖÃÊ±ÖÓÏßÎªµÍ£¬×¼±¸½ÓÊÕÊý¾ÝÎ» 
+  77   1        _DELAY_US(40);
+  78   1        SDA = 1;                                 //ÊÍ·Å×ÜÏß,ÖÃÊý¾ÝÏßÎªÊäÈë·½Ê½ 
+  79   1        for (i=0; i<8; i++)
+  80   1        {
+  81   2          SCL = 1;                          //SCL¸ßµçÆ½ÆÚ¼ä£¬²É¼¯SDAÐÅºÅ£¬²¢×÷ÎªÓÐÐ§Êý¾Ý //ÖÃÊ±ÖÓÏßÎª¸ßÊ¹Êý¾ÝÏßÉ
+             -ÏÊý¾ÝÓÐÐ§ 
+  82   2          _DELAY_US(20);
+  83   2          RDByte <<= 1;                  //ÒÆÎ»
+  84   2          if(SDA==1)                           //²ÉÑù»ñÈ¡Êý¾Ý
+  85   2          {
+  86   3            RDByte |= 0x01;
+  87   3          }
+  88   2          else
+  89   2          {
+  90   3            RDByte &= 0xfe;
+  91   3          }
+  92   2          _DELAY_US(10);
+  93   2          SCL = 0;                             //ÏÂ½µÑØ£¬´Ó»ú¸ø³öÏÂÒ»Î»Öµ
+  94   2          _DELAY_US(60);
+  95   2        }
+  96   1        /*ÒÔÏÂÊÇI2C×ÜÏß·¢ËÍÓ¦´ðÐÅºÅACK»òÕßNACK*/
+  97   1        SDA = AckValue;                      //Ó¦´ð×´Ì¬
+  98   1        _DELAY_US(30);
+  99   1        SCL = 1;
+ 100   1        _DELAY_US(50);                  //Ê±ÖÓµÍµçÆ½ÖÜÆÚ´óÓÚ4¦Ìs 
+ 101   1        SCL = 0;                                  //ÇåÊ±ÖÓÏß£¬Ç¯×¡I2C×ÜÏßÒÔ±ã¼ÌÐø½ÓÊÕ 
+ 102   1        _DELAY_US(150);
+ 103   1        return RDByte;
+ 104   1      }
+ 105          
+ 106          //³õÊ¼»¯IIC½Ó¿Ú
+ 107          void SGP30_Init(void)
+ 108          {
+ 109   1        SGP30_Write(0x20,0x03);
+ 110   1      //  SGP30_ad_write(0x20,0x61);
+ 111   1      //  SGP30_ad_write(0x01,0x00);
+ 112   1      }
+ 113          
+ 114          void SGP30_Write(u8 a, u8 b)
+ 115          {
+C51 COMPILER V9.60.7.0   SGP30                                                             04/18/2024 00:04:46 PAGE 3   
+
+ 116   1        I2CStart();
+ 117   1        I2C_Write_Byte(SGP30_write); //·¢ËÍÆ÷¼þµØÖ·+Ð´Ö¸Áî
+ 118   1        I2C_Write_Byte(a);    //·¢ËÍ¿ØÖÆ×Ö½Ú
+ 119   1        I2C_Write_Byte(b);
+ 120   1        I2CStop();
+ 121   1        _DELAY_MS(100);
+ 122   1      }
+ 123          
+ 124          unsigned long SGP30_Read(void)
+ 125          {
+ 126   1        unsigned long dat;
+ 127   1        int crc;
+ 128   1        I2CStart();
+ 129   1        I2C_Write_Byte(SGP30_read); //·¢ËÍÆ÷¼þµØÖ·+¶ÁÖ¸Áî
+ 130   1        dat = I2C_Read_Byte(ACK);
+ 131   1        dat <<= 8;
+ 132   1        dat += I2C_Read_Byte(ACK);
+ 133   1        crc = I2C_Read_Byte(ACK); //checkÊý¾Ý£¬ÉáÈ¥
+ 134   1        crc = crc;             //±ÜÃâ±àÒë²úÉú¾¯¸æ£¬Õâ¾ä¿ÉÓÐ¿ÉÎÞ
+ 135   1        dat <<= 8;
+ 136   1        dat += I2C_Read_Byte(ACK);
+ 137   1        dat <<= 8;
+ 138   1        dat += I2C_Read_Byte(NACK);
+ 139   1        I2CStop();
+ 140   1        return(dat);
+ 141   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    602    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----      11
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

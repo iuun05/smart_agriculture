@@ -1,0 +1,92 @@
+C51 COMPILER V9.60.7.0   UART                                                              04/18/2024 00:04:46 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE UART
+OBJECT MODULE PLACED IN .\Objects\uart.obj
+COMPILER INVOKED BY: E:\keil\Keil_v5_c51\C51\BIN\C51.EXE uart.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(
+                    -.\Listings\uart.lst) TABS(2) OBJECT(.\Objects\uart.obj)
+
+line level    source
+
+   1          #include "allh.h"
+   2          unsigned char xdata Rx_Data[RxDataLong];    //数据保存数组
+   3          unsigned char xdata Rx_New_Data = 0;    //获得的一个新数据
+   4          unsigned char xdata flag = 0,len = 0;
+   5          
+   6          
+   7          /*****************************************************
+   8          *函数名称：putchar(char c)
+   9          *函数功能：发送字符到串口
+  10          *入口参数：char c
+  11          *出口参数：c
+  12          *****************************************************/
+  13          char putchar(char c)
+  14          {
+  15   1        //输出重定向到串口
+  16   1        SBUF = c;
+  17   1        while(TI == 0);
+  18   1        TI = 0;
+  19   1        return c; //返回给函数的调用者printf
+  20   1      }
+  21          
+  22          
+  23          void Uart_Init(void)
+  24          {
+  25   1        SCON = 0x50 ; //串口工作方式1，8位UART，波特率可变
+  26   1        T2CON = 0x34; //T2定时器模式为波特率发生器接收和发送相同波特率
+  27   1        TL2 = RCAP2L = (65536-(FOSC/32/Baud)); //设置波特率低八位
+  28   1        TH2 = RCAP2H = (65536-(FOSC/32/Baud))>>8;  //设置波特率高八位
+  29   1      
+  30   1        ES = 1;   //串口开启  
+  31   1        EA = 1;   //总中断开启
+  32   1      }
+  33          
+  34          /*****************************************************
+  35          *函数名称：UART_ReceiveByte(void)
+  36          *函数功能：uart收到数据并进行数据解析
+  37          *入口参数：void
+  38          *出口参数：void
+  39          *****************************************************/
+  40          void UART_ReceiveByte(void)
+  41          {
+  42   1        Rx_New_Data = SBUF;   //收到数据字节
+  43   1        Rx_Data[len]  = Rx_New_Data;  //将数据传入到数组中
+  44   1        if(len>=RxDataLong-1)
+  45   1        {
+  46   2          len = 0;
+  47   2        }
+  48   1        else
+  49   1        {
+  50   2          len++;
+  51   2        }
+  52   1      }
+  53          
+  54          
+C51 COMPILER V9.60.7.0   UART                                                              04/18/2024 00:04:46 PAGE 2   
+
+  55          
+  56          void Uart_Isr() interrupt 4 using 1
+  57          {
+  58   1        if(RI)
+  59   1        {
+  60   2          RI = 0; 
+  61   2          UART_ReceiveByte(); 
+  62   2        }
+  63   1      }
+  64          
+  65          
+  66          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    100    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =    131    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

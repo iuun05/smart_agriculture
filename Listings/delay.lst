@@ -1,0 +1,63 @@
+C51 COMPILER V9.60.7.0   DELAY                                                             04/18/2024 00:04:46 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE DELAY
+OBJECT MODULE PLACED IN .\Objects\delay.obj
+COMPILER INVOKED BY: E:\keil\Keil_v5_c51\C51\BIN\C51.EXE delay.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT
+                    -(.\Listings\delay.lst) TABS(2) OBJECT(.\Objects\delay.obj)
+
+line level    source
+
+   1          #include "delay.h"
+   2          #include "intrins.h"
+   3          /*
+   4              延时函数
+   5              500ms per
+   6          */
+   7          
+   8          void Delay(unsigned char xms)
+   9          {
+  10   1        unsigned char data i, j,k;
+  11   1        while(xms--)
+  12   1        {
+  13   2      
+  14   2          _nop_();
+  15   2          i = 4;
+  16   2          j = 129;
+  17   2          k = 119;
+  18   2          do
+  19   2          {
+  20   3            do
+  21   3            {
+  22   4              while (--k);
+  23   4            } while (--j);
+  24   3          } while (--i);
+  25   2        }
+  26   1      }
+  27          
+  28          void _DELAY_MS(unsigned char ms)           
+  29          {
+  30   1        unsigned char data i,j;
+  31   1        for(i=ms;i>0;i--)
+  32   1          for(j=114;j>0;j--);
+  33   1      }
+  34          
+  35          
+  36          void _DELAY_US(unsigned char n)
+  37          {
+  38   1          while(--n);
+  39   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     51    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       5
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

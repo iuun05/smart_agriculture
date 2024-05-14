@@ -1,0 +1,10 @@
+".\Objects\STARTUP.obj",
+".\Objects\DTH11.obj",
+".\Objects\esp8266.obj",
+".\Objects\uart.obj",
+".\Objects\XPT2046.obj",
+".\Objects\SGP30.obj",
+".\Objects\delay.obj",
+".\Objects\main.obj" 
+TO ".\Objects\main" 
+PRINT(".\Listings\main.m51") RAMSIZE(256) 

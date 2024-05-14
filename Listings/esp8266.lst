@@ -1,0 +1,139 @@
+C51 COMPILER V9.60.7.0   ESP8266                                                           04/18/2024 00:04:45 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE ESP8266
+OBJECT MODULE PLACED IN .\Objects\esp8266.obj
+COMPILER INVOKED BY: E:\keil\Keil_v5_c51\C51\BIN\C51.EXE esp8266.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRI
+                    -NT(.\Listings\esp8266.lst) TABS(2) OBJECT(.\Objects\esp8266.obj)
+
+line level    source
+
+   1          #include "allh.h"
+   2          
+   3          unsigned char xdata Property_Data[2];   //Êý¾Ý±£´æÊý×é
+   4          
+   5          char *_led_on_ = "\"sunlight\":1";
+   6          char *_led_off_ = "\"sunlight\":0";
+   7          char *_fan_on_ = "\"fan\":1";
+   8          char *_fan_off_ = "\"fan\":0";
+   9          char *_pumb_on_ ="\"pumb\":1";
+  10          char *_pumb_off_ ="\"pumb\":0";
+  11          
+  12          //½âÎöÔÆ¶Ë·¢ËÍµÄÖ¸Áî
+  13          void check(char *ACK_AT) {
+  14   1          if (strstr(_led_on_, ACK_AT) != NULL) {
+  15   2              led = 1;
+  16   2          }
+  17   1          if (strstr(_led_off_, ACK_AT) != NULL) {
+  18   2              led = 0;
+  19   2          }
+  20   1          if (strstr(_fan_on_, ACK_AT) != NULL) {
+  21   2              fan = 1;
+  22   2          }
+  23   1          if (strstr(_fan_off_, ACK_AT) != NULL) {
+  24   2              fan = 0;
+  25   2          }
+  26   1          if (strstr(_pumb_on_, ACK_AT) != NULL) {
+  27   2              pumb = 1;
+  28   2          }
+  29   1          if (strstr(_pumb_off_, ACK_AT) != NULL) {
+  30   2              pumb = 0;
+  31   2          }
+  32   1      }
+  33          
+  34          /*****************************************************
+  35          *º¯ÊýÃû³Æ£ºvoid ESP8266_Init(void)
+  36          *º¯Êý¹¦ÄÜ£ºESP8266²ÎÊý³õÊ¼»¯
+  37          *Èë¿Ú²ÎÊý£ºvoid
+  38          *³ö¿Ú²ÎÊý£ºvoid
+  39          *****************************************************/
+  40          void ESP8266_Init(void)
+  41          {
+  42   1        printf("AT+CWMODE=1\r\n");  //ÅäÖÃWiFi¹¤×÷Ä£Ê½ÎªStationÄ£Ê½:¾ÍÊÇESP8266Ä£¿éÈ¥Á¬½Ó×Ô¼º¼ÒµÄwifi,
+  43   1                                    //ÊÖ»úÒ²Á¬½Ó×Ô¼º¼ÒµÄwifiÈ»ºóÊµÏÖÁËÊÖ»úºÍWiFiÄ£¿éµÄÍ¨ÐÅ,(×Ô¼º¼ÒwifiÏàµ±ÓÚÒ»¸öÖÐ½é)
+  44   1        while(ESP8266_Re("OK")==0)printf("AT+CWMODE=1\r\n");//·µ»ØÖµÊÇ·ñÎªOK
+  45   1        _DELAY_MS(300);
+  46   1        printf("AT+CWJAP=\"%s\",\"%s\"\r\n",WIFI_Name,WIFI_Pass);
+  47   1        while(ESP8266_Re("OK")==0)printf("AT+CWJAP=\"%s\",\"%s\"\r\n",WIFI_Name,WIFI_Pass);
+  48   1        _DELAY_MS(300);
+  49   1        printf("AT+MQTTUSERCFG=0,1,\"NULL\",\"%s\"\,\"%s\"\,0,0,\"\"\r\n",username,passwd);   //AT+MQTTUSERCFG - Å
+             -äÖÃ MQTT ÓÃ»§ÊôÐÔ
+  50   1        while(ESP8266_Re("OK")==0)printf("AT+MQTTUSERCFG=0,1,\"NULL\",\"%s\",\"%s\",0,0,\"\"\r\n",username,passwd
+             -);//·µ»ØÖµÊÇ·ñÎªOK
+  51   1        _DELAY_MS(300);
+  52   1        printf("AT+MQTTCLIENTID=0,\"%s\"\r\n",clientId);    //ÅäÖÃ MQTT ¿Í»§¶Ë ID
+C51 COMPILER V9.60.7.0   ESP8266                                                           04/18/2024 00:04:45 PAGE 2   
+
+  53   1        while(ESP8266_Re("OK")==0)printf("AT+MQTTCLIENTID=0,\"%s\"\r\n",clientId);//·µ»ØÖµÊÇ·ñÎªOK
+  54   1        _DELAY_MS(300);
+  55   1        printf("AT+MQTTCONN=0,\"%s\",%s,1\r\n",mqttHostUrl,port); //Á¬½ÓÖ¸¶¨ MQTTÐ­Òé
+  56   1        while(ESP8266_Re("OK")==0)printf("AT+MQTTCONN=0,\"%s\",%s,1\r\n",mqttHostUrl,port);//·µ»ØÖµÊÇ·ñÎªOK
+  57   1        _DELAY_MS(300);
+  58   1      }
+  59          /*****************************************************
+  60          *º¯ÊýÃû³Æ£ºESP8266_Re(char *ACK_AT)
+  61          *º¯Êý¹¦ÄÜ£º¶ÔÓ¦´ðÐÅºÅ½øÐÐ½âÎö
+  62          *Èë¿Ú²ÎÊý£ºvoid
+  63          *³ö¿Ú²ÎÊý£º0£ºÓ¦´ðÊ§°Ü
+  64                    1£ºÓ¦´ð³É¹¦
+  65          *****************************************************/
+  66          unsigned char ESP8266_Re(char *ACK_AT)
+  67          {   
+  68   1        unsigned char xdata *ret = 0;
+  69   1        unsigned char xdata i;
+  70   1      
+  71   1        _DELAY_MS(200);
+  72   1        if(ACK_AT == NULL)
+  73   1        {
+  74   2          return 0;
+  75   2        }
+  76   1        else
+  77   1        {
+  78   2          ret = Rx_Data;
+  79   2          if(ret != 0)
+  80   2          {
+  81   3            check(ACK_AT);                                          //¼ì²âÔÆ¶ËÏÂ·¢µÄÖ¸Áî
+  82   3            
+  83   3            if(strstr((const char *)ret,(const char *)ACK_AT) != NULL)
+  84   3            { 
+  85   4              for(i=0;i<len;i++)
+  86   4              {
+  87   5                Rx_Data[i]=0;
+  88   5              }
+  89   4              len = 0;
+  90   4              return 1;
+  91   4            }
+  92   3            else
+  93   3            {
+  94   4              for(i=0;i<len;i++)
+  95   4              {
+  96   5                Rx_Data[i]=0;
+  97   5              }
+  98   4              len = 0;
+  99   4              return 0;
+ 100   4            }     
+ 101   3          }
+ 102   2          else
+ 103   2          {
+ 104   3            len = 0;
+ 105   3            return 0;
+ 106   3          }   
+ 107   2        }
+ 108   1      }
+ 109          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    693    ----
+   CONSTANT SIZE    =    419    ----
+C51 COMPILER V9.60.7.0   ESP8266                                                           04/18/2024 00:04:45 PAGE 3   
+
+   XDATA SIZE       =     20       9
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
